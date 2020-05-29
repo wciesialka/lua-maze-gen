@@ -1,10 +1,10 @@
 require('Stack')
 
 MAZE_VISITED = 1
-MAZE_NORTH = 1 << 1
-MAZE_EAST = 1 << 2
-MAZE_WEST = 1 << 3
-MAZE_SOUTH = 1 << 4
+MAZE_NORTH = bit32.lshift(1, 1)
+MAZE_EAST = bit32.lshift(1, 2)
+MAZE_WEST = bit32.lshift(1, 3)
+MAZE_SOUTH = bit32.lshift(1, 4)
 
 function mazechar(v)
     s = ""
