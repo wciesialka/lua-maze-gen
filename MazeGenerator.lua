@@ -6,27 +6,27 @@ MAZE_EAST = 1 << 2
 MAZE_WEST = 1 << 3
 MAZE_SOUTH = 1 << 4
 
-function classify(v)
+function vtochar(v)
     s = ""
-    if v & MAZE_WEST == MAZE_WEST then
+    if bit32.band(v,MAZE_WEST) == MAZE_WEST then
         s = s .. "|"
     else
         s = s .. " "
     end
 
-    if v & MAZE_NORTH == MAZE_NORTH then
-        if v & MAZE_SOUTH == MAZE_SOUTH then
+    if bit32.band(v,MAZE_NORTH) == MAZE_NORTH then
+        if bit32.band(v,MAZE_SOUTH) == MAZE_SOUTH then
             s = s .. "\u{2050}"
         else
             s = s .. "\u{23ba}"
         end
-    elseif v & MAZE_SOUTH == MAZE_SOUTH then
+    elseif bit32.band(v,MAZE_SOUTH) == MAZE_SOUTH then
         s = s .. "\u{23af}"
     else
         s = s .. " "
     end
 
-    if v & MAZE_EAST == MAZE_EAST then
+    if bit32.band(v,MAZE_EAST) == MAZE_EAST then
         s = s .. "|"
     else
         s = s .. " "
@@ -56,10 +56,10 @@ function GenerateMaze(n,debug)
 
     local grid = {}
     for x = 1, n*n do
-        grid[x] = MAZE_NORTH | MAZE_EAST | MAZE_SOUTH | MAZE_WEST
+        grid[x] = bit32.bor(MAZE_NORTH, MAZE_EAST, MAZE_SOUTH, MAZE_WEST)
     end
     local current_cell = 1
-    grid[current_cell] = grid[current_cell] | MAZE_VISITED
+    grid[current_cell] = bit32.bor(grid[current_cell], MAZE_VISITED)
     stk:Push(current_cell)
 
     local done = false
@@ -70,7 +70,7 @@ function GenerateMaze(n,debug)
                 if i == current_cell then
                     io.write('|\u{2588}|')
                 else
-                    io.write(classify(v))
+                    io.write(vtochar(v))
                 end
                 if i % size == 0 then print() end
             end
@@ -108,7 +108,7 @@ function GenerateMaze(n,debug)
 
                 if (new_loc.x >= 0) and (new_loc.x < n) and (new_loc.y >= 0) and (new_loc.y < n) then
                     new_i = i(new_loc.x,new_loc.y)
-                    if grid[new_i] & MAZE_VISITED == MAZE_VISITED then
+                    if bit32.band(grid[new_i],MAZE_VISITED) == MAZE_VISITED then
                         gen_rand = true
                     else
                         new_cell = new_i
@@ -134,22 +134,22 @@ function GenerateMaze(n,debug)
 
             if cloc.x > loc.x then
                 -- new cell is further right
-                grid[current_cell] = grid[current_cell] & (~MAZE_EAST)
-                grid[new_cell] = grid[new_cell] & (~MAZE_WEST)
+                grid[current_cell] = bit32.band(grid[current_cell], bit32.bnot(MAZE_EAST))
+                grid[new_cell] = bit32.band(grid[new_cell],bit32.bnot(MAZE_WEST))
             elseif cloc.x < loc.x then
                 -- new cell is further left
-                grid[current_cell] = grid[current_cell] & (~MAZE_WEST)
-                grid[new_cell] = grid[new_cell] & (~MAZE_EAST)
+                grid[current_cell] = bit32.band(grid[current_cell], bit32.bnot(MAZE_WEST))
+                grid[new_cell] = bit32.band(grid[new_cell],bit32.bnot(MAZE_EAST))
             elseif cloc.y < loc.y then
                 -- new cell is further north
-                grid[current_cell] = grid[current_cell] & (~MAZE_NORTH)
-                grid[new_cell] = grid[new_cell] & (~MAZE_SOUTH)
+                grid[current_cell] = bit32.band(grid[current_cell], bit32.bnot(MAZE_NORTH))
+                grid[new_cell] = bit32.band(grid[new_cell],bit32.bnot(MAZE_SOUTH))
             else
                 -- new cell is further south
-                grid[current_cell] = grid[current_cell] & (~MAZE_SOUTH)
-                grid[new_cell] = grid[new_cell] & (~MAZE_NORTH)   
+                grid[current_cell] = bit32.band(grid[current_cell], bit32.bnot(MAZE_SOUTH))
+                grid[new_cell] = bit32.band(grid[new_cell],bit32.bnot(MAZE_NORTH))
             end
-            grid[new_cell] = grid[new_cell] | MAZE_VISITED
+            grid[new_cell] = bit32.bor(grid[new_cell],MAZE_VISITED)
             stk:Push(new_cell)
         end
     end
@@ -162,8 +162,8 @@ function GenerateMaze(n,debug)
     local entrance_i = i(entrance,n-1)
     local exit_i = i(exit,0)
 
-    grid[entrance_i] = grid[entrance_i] & (~MAZE_SOUTH)
-    grid[exit_i] = grid[exit_i] & (~MAZE_NORTH)
+    grid[entrance_i] = bit32.band(grid[entrance_i],bit32.bnot(MAZE_SOUTH))
+    grid[exit_i] = bit32.band(grid[exit_i], bit32.bnot(MAZE_NORTH))
 
     return grid
 end
