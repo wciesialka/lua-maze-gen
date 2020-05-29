@@ -7,35 +7,41 @@ MAZE_WEST = 1 << 3
 MAZE_SOUTH = 1 << 4
 
 function GenerateMaze(n)
-
+    n = tonumber(n)
     math.randomseed(os.time())
 
     local stk = Stack()
 
+    -- get place in table from x and y
     function i(x,y)
         return ((y*n) + x) + 1
     end
 
+    -- get x and y from place in table
     function xy(v)
-        v = v - 1
-        return {x= (v%n), y= math.floor( v/n )}
+        local v2 = v - 1
+        return {x= (v2%n), y= math.floor( v2/n )}
     end
 
     local grid = {}
     for x = 1, n*n do
-        grid[x] = MAZE_NORTH | MAZE_EAST | MAZE_WEST | MAZE_SOUTH
+        grid[x] = MAZE_NORTH | MAZE_EAST | MAZE_SOUTH | MAZE_WEST
     end
     local current_cell = 1
     grid[current_cell] = grid[current_cell] | MAZE_VISITED
     stk:Push(current_cell)
 
-    while not stk:Is_Empty() do
+    local done = false
+
+    while not done do
         current_cell = stk:Pop()
         local loc = xy(current_cell)
         local gen_rand = true
         local stuck = false
         local next_cell
+
         local choices = {0,1,2,3}
+
         while gen_rand do
 
             gen_rand = false
@@ -58,7 +64,9 @@ function GenerateMaze(n)
                     new_i = i(loc.x,loc.y - 1)
                 end
 
-                if new_i >= 1 and new_i <= #grid then
+                new_loc = xy(new_i)
+
+                if (new_loc.x >= 0) and (new_loc.x < n) and (new_loc.y >= 0) and (new_loc.y < n) then
                     if grid[new_i] & MAZE_VISITED == MAZE_VISITED then
                         gen_rand = true
                     else
@@ -74,9 +82,13 @@ function GenerateMaze(n)
             end
         end -- end while gen_rand
 
-        if not stuck then
+        if stuck then
+            if stk:Is_Empty() then
+                done = true
+            end
+        else
             stk:Push(current_cell)
-            local wall = 0
+            
             local cloc = xy(new_cell)
 
             if cloc.x > loc.x then
@@ -88,11 +100,11 @@ function GenerateMaze(n)
                 grid[current_cell] = grid[current_cell] & (~MAZE_WEST)
                 grid[new_cell] = grid[new_cell] & (~MAZE_EAST)
             elseif cloc.y < loc.y then
-                -- new cell is further MAZE_NORTH
+                -- new cell is further north
                 grid[current_cell] = grid[current_cell] & (~MAZE_NORTH)
                 grid[new_cell] = grid[new_cell] & (~MAZE_SOUTH)
             else
-                -- new cell is further MAZE_SOUTH
+                -- new cell is further south
                 grid[current_cell] = grid[current_cell] & (~MAZE_SOUTH)
                 grid[new_cell] = grid[new_cell] & (~MAZE_NORTH)   
             end
@@ -100,6 +112,17 @@ function GenerateMaze(n)
             stk:Push(new_cell)
         end
     end
+
+    -- pick entrance and exit
+
+    local entrance = math.random( 0, n-1 )
+    local exit = math.random( 0, n-1 )
+
+    local entrance_i = i(entrance,n-1)
+    local exit_i = i(exit,0)
+
+    grid[entrance_i] = grid[entrance_i] & (~MAZE_SOUTH)
+    grid[exit_i] = grid[exit_i] & (~MAZE_NORTH)
 
     return grid
 end
