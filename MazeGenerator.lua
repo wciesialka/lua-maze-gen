@@ -6,8 +6,39 @@ MAZE_EAST = 1 << 2
 MAZE_WEST = 1 << 3
 MAZE_SOUTH = 1 << 4
 
-function GenerateMaze(n)
+function classify(v)
+    s = ""
+    if v & MAZE_WEST == MAZE_WEST then
+        s = s .. "|"
+    else
+        s = s .. " "
+    end
+
+    if v & MAZE_NORTH == MAZE_NORTH then
+        if v & MAZE_SOUTH == MAZE_SOUTH then
+            s = s .. "\u{2050}"
+        else
+            s = s .. "\u{23ba}"
+        end
+    elseif v & MAZE_SOUTH == MAZE_SOUTH then
+        s = s .. "\u{23af}"
+    else
+        s = s .. " "
+    end
+
+    if v & MAZE_EAST == MAZE_EAST then
+        s = s .. "|"
+    else
+        s = s .. " "
+    end
+
+    return s
+end
+
+function GenerateMaze(n,debug)
     n = tonumber(n)
+    if debug == nil then debug = false end
+
     math.randomseed(os.time())
 
     local stk = Stack()
@@ -34,6 +65,17 @@ function GenerateMaze(n)
     local done = false
 
     while not done do
+        if debug then 
+            for i,v in pairs(grid) do
+                if i == current_cell then
+                    io.write('|\u{2588}|')
+                else
+                    io.write(classify(v))
+                end
+                if i % size == 0 then print() end
+            end
+            io.stdin:read'*l' 
+        end
         current_cell = stk:Pop()
         local loc = xy(current_cell)
         local gen_rand = true
@@ -52,21 +94,20 @@ function GenerateMaze(n)
             else
                 local rand = math.random( 1, #choices )
                 local to_visit = choices[rand]
-                local new_i
+                local new_i, new_loc
 
                 if to_visit == 0 then
-                    new_i = i(loc.x + 1,loc.y)
+                    new_loc = {x=loc.x,y=loc.y - 1}
                 elseif to_visit == 1 then
-                    new_i = i(loc.x - 1,loc.y)
+                    new_loc = {x=loc.x+1,y=loc.y}
                 elseif to_visit == 2 then
-                    new_i = i(loc.x,loc.y + 1)
+                    new_loc = {x=loc.x,y=loc.y+1}
                 elseif to_visit == 3 then
-                    new_i = i(loc.x,loc.y - 1)
+                    new_loc = {x=loc.x-1,y=loc.y}
                 end
 
-                new_loc = xy(new_i)
-
                 if (new_loc.x >= 0) and (new_loc.x < n) and (new_loc.y >= 0) and (new_loc.y < n) then
+                    new_i = i(new_loc.x,new_loc.y)
                     if grid[new_i] & MAZE_VISITED == MAZE_VISITED then
                         gen_rand = true
                     else
