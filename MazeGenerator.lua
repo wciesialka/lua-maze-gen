@@ -6,7 +6,7 @@ MAZE_EAST = 1 << 2
 MAZE_WEST = 1 << 3
 MAZE_SOUTH = 1 << 4
 
-function vtochar(v)
+function mazechar(v)
     s = ""
     if bit32.band(v,MAZE_WEST) == MAZE_WEST then
         s = s .. "|"
@@ -70,7 +70,7 @@ function GenerateMaze(n,debug)
                 if i == current_cell then
                     io.write('|\u{2588}|')
                 else
-                    io.write(vtochar(v))
+                    io.write(mazechar(v))
                 end
                 if i % size == 0 then print() end
             end
