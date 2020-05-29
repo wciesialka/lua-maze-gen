@@ -13,10 +13,11 @@ function GenerateMaze(n)
     local stk = Stack()
 
     function i(x,y)
-        return (y*n) + x
+        return ((y*n) + x) + 1
     end
 
     function xy(v)
+        v = v - 1
         return {x= (v%n), y= math.floor( v/n )}
     end
 
@@ -33,7 +34,7 @@ function GenerateMaze(n)
         local loc = xy(current_cell)
         local gen_rand = true
         local stuck = false
-        local next_cell = 0
+        local next_cell
         local choices = {0,1,2,3}
         while gen_rand do
 
