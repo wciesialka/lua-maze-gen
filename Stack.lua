@@ -34,7 +34,7 @@ function stack_meta_index.Push(self, e)
     table.insert(self.a,e) -- if we use table.insert without a position index it inserts to end, a push
 end
 
-function stack_meta_index.Pop(self, e)
+function stack_meta_index.Pop(self)
     if #self.a > 0 then
         return table.remove(self.a,#self.a) -- remove the last element of a and return it.
     else
