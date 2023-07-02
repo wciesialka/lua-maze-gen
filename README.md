@@ -15,7 +15,7 @@ You can use `lua Main.lua [n]` where n is the size of your maze. If n is omitted
 
 ## Authors
 
-* **William Ciesialka**
+* **Willow Ciesialka**
 
 ## License
 
